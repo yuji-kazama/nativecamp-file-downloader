@@ -23,17 +23,16 @@ func main() {
 		fmt.Println(usageNotice)
 		return
 	}
-	for i := 1; i < len(os.Args); i++ {
+	for i, total := 1, len(os.Args)-1; i < total; i++ {
 		pageURL := os.Args[i]
 
-		fmt.Printf("[%d/%d] %s\n", i, len(os.Args)-1, pageURL)
+		fmt.Printf("[%d/%d] %s\n", i, total, pageURL)
 
 		audioFileURL, err := getAudioFileURL(pageURL)
 		if err != nil {
 			fmt.Println("Failed to get audio file URL:", err)
 			return
 		}
-		// fmt.Println("Audio file URL:", audioFileURL)
 
 		err = downloadFile(audioFileURL)
 		if err != nil {
