@@ -4,48 +4,51 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/chromedp"
 )
 
+	const (
+		audioXPath = "/html/body/div[4]/div/div/div/div/article/div[1]/div[8]/div/div[2]/div/div[2]/p/a" 
+		folderPath = "./out"
+	)
+
 func main() {
-	// get pagelURL from args
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: go run main.go <pageURL>")
+		return
 	}
 	pageURL := os.Args[1]
 
-	// get fileURL from pageURL
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
 	var nodes []*cdp.Node
 	if err := chromedp.Run(ctx,
 		chromedp.Navigate(pageURL),
-		chromedp.Sleep(5000*time.Millisecond),
-		chromedp.Nodes(`/html/body/div[4]/div/div/div/div/article/div[1]/div[8]/div/div[2]/div/div[2]/p/a`, &nodes, chromedp.BySearch),
-
+		chromedp.WaitVisible(audioXPath, chromedp.BySearch),
+		chromedp.Nodes(audioXPath, &nodes, chromedp.BySearch),
 	); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	var fileURL = nodes[0].AttributeValue("data-src")
-	fmt.Println(fileURL)
+	var audioFileURL = nodes[0].AttributeValue("data-src")
+	fmt.Println("Audio file URL: " + audioFileURL)
 
-	// get file
+	download(audioFileURL)
+	fmt.Println("Finish file download")
+}
+
+func download(fileURL string) {
 	resp, err := http.Get(fileURL)
 	if err != nil {
 		panic(err)
 	}
 	defer resp.Body.Close()
 
-	// dowlad file
-	folderPath := "./out"
 	_, err = os.Stat(folderPath)
 	if os.IsNotExist(err) {
 		err := os.Mkdir(folderPath, 0755)
@@ -54,7 +57,6 @@ func main() {
 		}
 	}
 	out, err := os.Create(folderPath + "/" + getFileName(fileURL))
-
 	if err != nil {
 		panic(err)
 	}
@@ -64,7 +66,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Finished: downloaded file from " + fileURL)
 }
 
 func getFileName(fileURL string) string {
