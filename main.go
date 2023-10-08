@@ -19,21 +19,19 @@ import (
 	)
 
 func main() {
-	if len(os.Args) < 2 {
+	totalArg := len(os.Args)
+	if totalArg < 2 {
 		fmt.Println(usageNotice)
 		return
 	}
-	for i, total := 1, len(os.Args)-1; i < total; i++ {
+	for i := 1; i < totalArg; i++ {
 		pageURL := os.Args[i]
-
-		fmt.Printf("[%d/%d] %s\n", i, total, pageURL)
-
+		fmt.Printf("[%d/%d] %s\n", i, totalArg-1, pageURL)
 		audioFileURL, err := getAudioFileURL(pageURL)
 		if err != nil {
 			fmt.Println("Failed to get audio file URL:", err)
 			return
 		}
-
 		err = downloadFile(audioFileURL)
 		if err != nil {
 			fmt.Println("Failed to downlod file:", err)
@@ -83,7 +81,6 @@ func downloadFile(fileURL string) error {
 	if err != nil {
 		return fmt.Errorf("failed to save file: %w", err)
 	}
-
 	return nil
 }
 
