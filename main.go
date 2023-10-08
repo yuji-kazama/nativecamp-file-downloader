@@ -13,62 +13,89 @@ import (
 )
 
 	const (
+		usageNotice = "Usage: go run main.go <NativeCamp_DailyNews_Page_URL>"
 		audioXPath = "/html/body/div[4]/div/div/div/div/article/div[1]/div[8]/div/div[2]/div/div[2]/p/a" 
 		folderPath = "./out"
 	)
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: go run main.go <pageURL>")
+		fmt.Println(usageNotice)
 		return
 	}
 	pageURL := os.Args[1]
 
+	audioFileURL, err := getAudioFileURL(pageURL)
+	if err != nil {
+		fmt.Println("Failed to get audio file URL:", err)
+		return
+	}
+	fmt.Println("Audio file URL:", audioFileURL)
+
+	err = downloadFile(audioFileURL)
+	if err != nil {
+		fmt.Println("Failed to downlod file:", err)
+		return
+	}
+	fmt.Println("Finish file download")
+}
+
+func getAudioFileURL(pageURL string) (string, error) {
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
 	var nodes []*cdp.Node
-	if err := chromedp.Run(ctx,
+	err := chromedp.Run(ctx,
 		chromedp.Navigate(pageURL),
 		chromedp.WaitVisible(audioXPath, chromedp.BySearch),
 		chromedp.Nodes(audioXPath, &nodes, chromedp.BySearch),
-	); err != nil {
-		panic(err)
+	)
+	if err != nil {
+		return "", fmt.Errorf("failed to execute ChromeDP: %w", err)
 	}
-	var audioFileURL = nodes[0].AttributeValue("data-src")
-	fmt.Println("Audio file URL: " + audioFileURL)
 
-	download(audioFileURL)
-	fmt.Println("Finish file download")
+	return nodes[0].AttributeValue("data-src"), nil
 }
 
-func download(fileURL string) {
+func downloadFile(fileURL string) error {
 	resp, err := http.Get(fileURL)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to download file: %w", err)
 	}
 	defer resp.Body.Close()
 
-	_, err = os.Stat(folderPath)
-	if os.IsNotExist(err) {
-		err := os.Mkdir(folderPath, 0755)
-		if err != nil {
-			panic(err)
-		}
-	}
-	out, err := os.Create(folderPath + "/" + getFileName(fileURL))
+	err = createDirectoryIfNotExist(folderPath)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to create directory: %w", err)
+	}
+
+	fileName := getDownloadableFileName(fileURL)
+	filePath := folderPath + "/" + fileName
+	out, err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %w", err)
 	}
 	defer out.Close()
 
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to save file: %w", err)
 	}
+
+	return nil
 }
 
-func getFileName(fileURL string) string {
+func createDirectoryIfNotExist(dirPath string) error {
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+		err := os.Mkdir(dirPath, 0755)
+		if err != nil {
+			return fmt.Errorf("failed to create directory: %w", err)
+		}
+	}
+	return nil
+}
+
+func getDownloadableFileName(fileURL string) string {
 	keyword := "/"
 	index := strings.LastIndex(fileURL, keyword)
 	if index < 0 {
