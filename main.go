@@ -13,7 +13,7 @@ import (
 )
 
 	const (
-		usageNotice = "Usage: go run main.go <NativeCamp_DailyNews_Page_URL>"
+		usageNotice = "Usage: go run main.go <NativeCamp_DailyNews_Page_URLs>"
 		audioXPath = "/html/body/div[4]/div/div/div/div/article/div[1]/div[8]/div/div[2]/div/div[2]/p/a" 
 		folderPath = "./out"
 	)

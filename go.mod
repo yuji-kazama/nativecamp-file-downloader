@@ -1,4 +1,4 @@
-module ncfiledowloader
+module ncfiledownloader
 
 go 1.21.1
 
