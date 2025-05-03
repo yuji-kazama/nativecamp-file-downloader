@@ -1,12 +1,10 @@
 #!/bin/bash
 
 PAGE_URLS="
-https://nativecamp.net/textbook/page-detail/2/24193
-https://nativecamp.net/textbook/page-detail/2/24163
-https://nativecamp.net/textbook/page-detail/2/24177
-https://nativecamp.net/textbook/page-detail/2/24172
-https://nativecamp.net/textbook/page-detail/2/24189
+https://nativecamp.net/textbook/page-detail/1/38330
+https://nativecamp.net/textbook/page-detail/2/38530
 "
+
 
 rm -rf ./out
 go run main.go $PAGE_URLS

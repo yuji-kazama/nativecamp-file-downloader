@@ -14,8 +14,13 @@ import (
 
   const (
     usageNotice = "Usage: go run main.go <NativeCamp_DailyNews_Page_URLs>"
-    audioXPath = "/html/body/div[4]/div/div/div/div/article/div[1]/div[8]/div/div[2]/div/div[2]/div/button"
-    // audioXPath = "/html/body/div[4]/div/div/div/div/article/div[1]/div[8]/div/div[2]/div/div[2]/p/a"
+    // US Prononciation
+    // audioXPath = "/html/body/div[4]/div/div/div/div/article/div[1]/div[8]/div/div[2]/div/div[2]/div[1]/div/button"
+	audioXPath = "/html/body/div[4]/div/div/div/div/article/div[2]/div[8]/div/div[2]/div/div[2]/div[1]/div/button"
+
+    // British Pronounciation
+    // audioXPath = "/html/body/div[4]/div/div/div/div/article/div[2]/div[8]/div/div[2]/div/div[2]/div[2]/div/button
+
     folderPath = "./out"
   )
 
