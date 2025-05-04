@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,25 +15,39 @@ import (
 )
 
 const (
-	usageNotice = "Usage: go run main.go <NativeCamp_DailyNews_Page_URLs>"
-	// US Prononciation
-	audioXPath = "/html/body/div[4]/div/div/div/div/article/div[2]/div[8]/div/div[2]/div/div[2]/div[1]/div/button"
-	// British Pronounciation
-	// audioXPath = "/html/body/div[4]/div/div/div/div/article/div[2]/div[8]/div/div[2]/div/div[2]/div[2]/div/button"
-	folderPath = "./out"
+	usageNotice = "Usage: go run main.go [-p br] <NativeCamp_DailyNews_Page_URLs>"
+	folderPath  = "./out"
 	// Timeout settings
 	pageLoadTimeout    = 30 * time.Second
 	elementWaitTimeout = 10 * time.Second
+
+	// XPath for different pronunciations
+	usXPath = "/html/body/div[4]/div/div/div/div/article/div[2]/div[8]/div/div[2]/div/div[2]/div[1]/div/button"
+	ukXPath = "/html/body/div[4]/div/div/div/div/article/div[2]/div[8]/div/div[2]/div/div[2]/div[2]/div/button"
+	caXPath = "/html/body/div[4]/div/div/div/div/article/div[2]/div[8]/div/div[2]/div/div[2]/div[3]/div/button"
 )
 
+var audioXPath string
+
 func main() {
-	totalArg := len(os.Args)
-	if totalArg < 2 {
+	pronType := flag.String("p", "us", "Pronunciation type (us/uk/ca)")
+	flag.Parse()
+
+	switch strings.ToLower(*pronType) {
+	case "ca":
+		audioXPath = caXPath
+	case "uk":
+		audioXPath = ukXPath
+	default:
+		audioXPath = usXPath
+	}
+
+	args := flag.Args()
+	if len(args) < 1 {
 		fmt.Println(usageNotice)
 		return
 	}
 
-	// Create output directory
 	err := createDirectoryIfNotExist(folderPath)
 	if err != nil {
 		fmt.Println("Failed to create output directory:", err)
@@ -42,9 +57,8 @@ func main() {
 	successCount := 0
 	failCount := 0
 
-	for i := 1; i < totalArg; i++ {
-		pageURL := os.Args[i]
-		fmt.Printf("[%d/%d] Processing: %s\n", i, totalArg-1, pageURL)
+	for i, pageURL := range args {
+		fmt.Printf("[%d/%d] Processing: %s\n", i+1, len(args), pageURL)
 
 		audioFileURL, err := getAudioFileURL(pageURL)
 		if err != nil {
@@ -65,7 +79,7 @@ func main() {
 	}
 
 	fmt.Printf("\n📊 Summary: %d successful, %d failed, total: %d\n",
-		successCount, failCount, totalArg-1)
+		successCount, failCount, len(args))
 }
 
 func getAudioFileURL(pageURL string) (string, error) {
@@ -80,15 +94,12 @@ func getAudioFileURL(pageURL string) (string, error) {
 	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
 	defer cancel()
 
-	// Add timeout settings
 	ctx, cancel := context.WithTimeout(allocCtx, pageLoadTimeout)
 	defer cancel()
 
-	// Create browser context
 	ctx, cancel = chromedp.NewContext(ctx)
 	defer cancel()
 
-	// Channel for error handling
 	errChan := make(chan error, 1)
 	go func() {
 		errChan <- chromedp.Run(ctx,
@@ -126,7 +137,6 @@ func getAudioFileURL(pageURL string) (string, error) {
 }
 
 func downloadFile(fileURL string) error {
-	// Add timeout setting to HTTP client
 	client := &http.Client{
 		Timeout: 30 * time.Second,
 	}
@@ -137,7 +147,6 @@ func downloadFile(fileURL string) error {
 	}
 	defer resp.Body.Close()
 
-	// Check response code
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("error response from server: %s", resp.Status)
 	}
