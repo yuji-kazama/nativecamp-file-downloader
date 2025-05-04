@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	usageNotice = "Usage: go run main.go [-p br] <NativeCamp_DailyNews_Page_URLs>"
+	usageNotice = "Usage: go run main.go [-p us/uk/ca] <NativeCamp_DailyNews_Page_URLs>"
 	folderPath  = "./out"
 	// Timeout settings
 	pageLoadTimeout    = 30 * time.Second

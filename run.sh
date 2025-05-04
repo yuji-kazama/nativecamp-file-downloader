@@ -1,8 +1,10 @@
 #!/bin/bash
 
 PAGE_URLS="
-https://nativecamp.net/textbook/page-detail/1/38330
-https://nativecamp.net/textbook/page-detail/2/38530
+https://nativecamp.net/textbook/page-detail/1/38855
+https://nativecamp.net/textbook/page-detail/1/38928
+https://nativecamp.net/textbook/page-detail/1/38931
+https://nativecamp.net/textbook/page-detail/1/38974
 "
 
 
