@@ -1,15 +1,12 @@
 #!/bin/bash
 
 PAGE_URLS="
-https://nativecamp.net/textbook/page-detail/1/38855
-https://nativecamp.net/textbook/page-detail/1/38928
-https://nativecamp.net/textbook/page-detail/1/38931
-https://nativecamp.net/textbook/page-detail/1/38974
+https://nativecamp.net/textbook/page-detail/1/40468
+https://nativecamp.net/textbook/page-detail/1/40449
+https://nativecamp.net/textbook/page-detail/1/40539
+https://nativecamp.net/textbook/page-detail/1/40581
 "
 
-
 rm -rf ./out
-go run main.go $PAGE_URLS
-# ./ncfiledownloader $PAGE_URLS
-
+go run cmd/ncfiledownloader/main.go $PAGE_URLS
 open ./out
